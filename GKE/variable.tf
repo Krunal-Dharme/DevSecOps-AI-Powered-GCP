@@ -1,4 +1,7 @@
-variable "subscription_id" {}
-variable "tenant_id" {}
-variable "client_id" {}
-variable "client_secret" {}
+variable "project_id" {
+  default = "project-052ab01a-3589-4f07-a43"
+}
+
+variable "region" {
+  default = "asia-south1"
+}
