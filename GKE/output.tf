@@ -1,11 +1,11 @@
-output "aks_cluster_id" {
-  value = azurerm_kubernetes_cluster.aks.id
+output "cluster_name" {
+  value = google_container_cluster.gke.name
 }
 
-output "vnet_id" {
-  value = azurerm_virtual_network.vnet.id
+output "cluster_endpoint" {
+  value = google_container_cluster.gke.endpoint
 }
 
-output "subnet_id" {
-  value = azurerm_subnet.subnet.id
+output "vpc_name" {
+  value = google_compute_network.vpc.name
 }
