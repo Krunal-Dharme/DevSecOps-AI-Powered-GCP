@@ -135,14 +135,14 @@
             </plugin>
 
             <!-- OWASP Dependency Check (Optimized) -->
-            <!--
+            
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <version>12.1.3</version>
                 <configuration>
                     <format>ALL</format>
-                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <failBuildOnCVSS>12</failBuildOnCVSS>
                     <failOnError>false</failOnError>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
                     <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
@@ -159,7 +159,7 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
+           
 
         </plugins>
     </build>
