@@ -93,12 +93,10 @@ pipeline {
             steps {
 
                 sh '''
-                    gcloud container clusters get-credentials \
-                    quantam-gke \
-                    --region asia-south1 \
+                    gcloud container clusters get-credentials quantam-gke \
+                    --zone asia-south1-a \
                     --project project-052ab01a-3589-4f07-a43
                 '''
-
                 sh 'kubectl get nodes'
             }
         }
