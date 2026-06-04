@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "kunu12345/devsecops-ai-powered:${GIT_COMMIT}"
+        IMAGE_NAME = "kunu12345/devsecops-ai-powered-new:${GIT_COMMIT}"
 
         GCP_PROJECT = "project-052ab01a-3589-4f07-a43"
         GKE_CLUSTER = "quantam-gke"
@@ -19,7 +19,7 @@ pipeline {
         stage('Git Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered.git'
+                    url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered-GCP.git'
             }
         }
 
