@@ -1,12 +1,11 @@
-resource "google_compute_network" "vpc" {
-  name                    = "quantam-vpc"
-  auto_create_subnetworks = false
+output "cluster_name" {
+  value = google_container_cluster.gke.name
 }
 
-resource "google_compute_subnetwork" "subnet" {
-  name          = "quantam-subnet"
-  ip_cidr_range = "10.0.1.0/24"
+output "cluster_endpoint" {
+  value = google_container_cluster.gke.endpoint
+}
 
-  region  = var.region
-  network = google_compute_network.vpc.id
+output "vpc_name" {
+  value = google_compute_network.vpc.name
 }
