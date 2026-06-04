@@ -1,27 +1,32 @@
-resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "quantam-aks"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "quantamaks"
+resource "google_container_cluster" "gke" {
 
-  default_node_pool {
-    name                 = "systempool"
-    node_count           = 1
-    vm_size              = "Standard_B2s_v2"
-    vnet_subnet_id       = azurerm_subnet.subnet.id
+  name     = "quantam-gke"
+  location = var.region
 
-    enable_auto_scaling  = true
-    min_count            = 1
-    max_count            = 2
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
+  network    = google_compute_network.vpc.name
+  subnetwork = google_compute_subnetwork.subnet.name
+}
+
+resource "google_container_node_pool" "primary_nodes" {
+
+  name     = "primary-nodepool"
+  cluster  = google_container_cluster.gke.name
+  location = var.region
+
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 2
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
+  node_config {
 
-  network_profile {
-    network_plugin = "azure"
-    service_cidr   = "10.2.0.0/16"
-    dns_service_ip = "10.2.0.10"
+    machine_type = "e2-medium"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
   }
 }
