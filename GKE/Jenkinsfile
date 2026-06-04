@@ -9,43 +9,44 @@ pipeline {
         )
     }
 
-    environment {
-        ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
-        ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
-        ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
-        ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
-    }
-
     stages {
 
         stage('Checkout') {
             steps {
                 dir("terraform") {
-                    git url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered.git', branch: 'terraform'
+                    git url: 'https://github.com/Krunal-Dharme/DevSecOps-AI-Powered-GCP.git',
+                        branch: 'terraform'
                 }
             }
         }
 
-        stage('Plan') {
+        stage('Terraform Init') {
             steps {
-                sh 'cd AKS && terraform init'
-
                 sh '''
-                    cd AKS && terraform plan -out=tfplan \
-                    -var="subscription_id=$ARM_SUBSCRIPTION_ID" \
-                    -var="tenant_id=$ARM_TENANT_ID" \
-                    -var="client_id=$ARM_CLIENT_ID" \
-                    -var="client_secret=$ARM_CLIENT_SECRET"
+                    cd terraform/GKE
+                    terraform init
+                '''
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                sh '''
+                    cd terraform/GKE
+                    terraform plan -out=tfplan
                 '''
 
-                sh 'cd AKS && terraform show -no-color tfplan > tfplan.txt'
+                sh '''
+                    cd terraform/GKE
+                    terraform show -no-color tfplan > tfplan.txt
+                '''
             }
         }
 
         stage('Approval') {
             steps {
                 script {
-                    def plan = readFile 'AKS/tfplan.txt'
+                    def plan = readFile 'terraform/GKE/tfplan.txt'
 
                     input(
                         message: "Approve Terraform Plan?",
@@ -64,18 +65,41 @@ pipeline {
         stage('Apply/Destroy') {
             steps {
                 script {
+
                     if (params.terraformAction == 'apply') {
-                        sh 'cd AKS && terraform apply -auto-approve tfplan'
-                    } else if (params.terraformAction == 'destroy') {
+
                         sh '''
-                            cd AKS && terraform destroy -auto-approve \
-                            -var="subscription_id=$ARM_SUBSCRIPTION_ID" \
-                            -var="tenant_id=$ARM_TENANT_ID" \
-                            -var="client_id=$ARM_CLIENT_ID" \
-                            -var="client_secret=$ARM_CLIENT_SECRET"
+                            cd terraform/GKE
+                            terraform apply -auto-approve tfplan
                         '''
+
+                    } else {
+
+                        sh '''
+                            cd terraform/GKE
+                            terraform destroy -auto-approve
+                        '''
+
                     }
                 }
+            }
+        }
+
+        stage('Configure Kubectl') {
+            when {
+                expression { params.terraformAction == 'apply' }
+            }
+
+            steps {
+
+                sh '''
+                    gcloud container clusters get-credentials \
+                    quantam-gke \
+                    --region asia-south1 \
+                    --project project-052ab01a-3589-4f07-a43
+                '''
+
+                sh 'kubectl get nodes'
             }
         }
     }
