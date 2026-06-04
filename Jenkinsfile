@@ -7,9 +7,11 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME         = "kunu12345/devsecops-ai-powered:${GIT_COMMIT}"
-        AKS_CLUSTER_NAME   = "quantam-aks"
-        AKS_RESOURCE_GROUP = "quantam-rg"
+        IMAGE_NAME = "kunu12345/devsecops-ai-powered:${GIT_COMMIT}"
+
+        GCP_PROJECT = "project-052ab01a-3589-4f07-a43"
+        GKE_CLUSTER = "quantam-gke"
+        GKE_ZONE    = "asia-south1-a"
     }
 
     stages {
@@ -23,43 +25,31 @@ pipeline {
 
         stage('Compile') {
             steps {
-                sh '''
-                    echo "Compiling the code..."
-                    mvn compile
-                '''
+                sh 'mvn compile'
             }
         }
 
         stage('Build') {
             steps {
-                sh '''
-                    echo "Building the application..."
-                    mvn clean package
-                '''
+                sh 'mvn clean package'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh '''
-                    echo "Building Docker image..."
-                    docker build -t ${IMAGE_NAME} .
-                '''
+                sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
                     sh '''
-                        echo "Logging into Docker Hub..."
-                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
                     '''
                 }
             }
@@ -67,63 +57,37 @@ pipeline {
 
         stage('Docker Push') {
             steps {
+                sh 'docker push ${IMAGE_NAME}'
+            }
+        }
+
+        stage('Configure GCP Project') {
+            steps {
                 sh '''
-                    echo "Pushing Docker image..."
-                    docker push ${IMAGE_NAME}
+                    gcloud config set project ${GCP_PROJECT}
                 '''
             }
         }
 
-        stage('Azure Login') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'ARM_CLIENT_ID', variable: 'ARM_CLIENT_ID'),
-                    string(credentialsId: 'ARM_CLIENT_SECRET', variable: 'ARM_CLIENT_SECRET'),
-                    string(credentialsId: 'ARM_TENANT_ID', variable: 'ARM_TENANT_ID'),
-                    string(credentialsId: 'ARM_SUBSCRIPTION_ID', variable: 'ARM_SUBSCRIPTION_ID')
-                ]) {
-                    sh '''
-                        echo "Logging into Azure..."
-
-                        az login --service-principal \
-                          --username $ARM_CLIENT_ID \
-                          --password $ARM_CLIENT_SECRET \
-                          --tenant $ARM_TENANT_ID
-
-                        az account set --subscription $ARM_SUBSCRIPTION_ID
-                    '''
-                }
-            }
-        }
-
-        stage('Update Kubeconfig') {
+        stage('Get GKE Credentials') {
             steps {
                 sh '''
-                    echo "Updating AKS kubeconfig..."
+                    export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
-                    az aks get-credentials \
-                      --resource-group ${AKS_RESOURCE_GROUP} \
-                      --name ${AKS_CLUSTER_NAME} \
-                      --overwrite-existing
+                    gcloud container clusters get-credentials ${GKE_CLUSTER} \
+                        --zone ${GKE_ZONE} \
+                        --project ${GCP_PROJECT}
                 '''
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to GKE') {
             steps {
-                withKubeConfig(
-                    clusterName: 'quantam-aks',
-                    credentialsId: 'kube',
-                    namespace: 'quantam',
-                    serverUrl: 'https://quantamaks-c4eef10z.hcp.centralindia.azmk8s.io',
-                    restrictKubeConfigAccess: false
-                ) {
-                    sh '''
-                        echo "Deploying to Kubernetes..."
+                sh '''
+                    echo "Deploying to Kubernetes..."
 
-                        kubectl apply -f deployment.yaml -n quantam
-                    '''
-                }
+                    kubectl apply -f deployment.yaml
+                '''
             }
         }
     }
