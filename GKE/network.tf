@@ -1,18 +1,12 @@
-resource "azurerm_resource_group" "rg" {
-  name     = "quantam-rg"
-  location = "centralindia"
+resource "google_compute_network" "vpc" {
+  name                    = "quantam-vpc"
+  auto_create_subnetworks = false
 }
 
-resource "azurerm_virtual_network" "vnet" {
-  name                = "quantam-vnet"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  address_space       = ["10.0.0.0/16"]
-}
+resource "google_compute_subnetwork" "subnet" {
+  name          = "quantam-subnet"
+  ip_cidr_range = "10.0.1.0/24"
 
-resource "azurerm_subnet" "subnet" {
-  name                 = "quantam-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.1.0/24"]
+  region  = var.region
+  network = google_compute_network.vpc.id
 }
