@@ -96,7 +96,7 @@ pipeline {
 
         stage('Test & Coverage') {
             steps {
-                sh 'mvn clean test jacoco:report'
+                sh 'mvn test jacoco:report'
             }
 
             post {
