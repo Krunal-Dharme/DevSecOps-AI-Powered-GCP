@@ -3,7 +3,7 @@
 LLM client with fallback chain: Ollama (local) → HuggingFace (free) → OpenAI
 Set environment variables to configure:
   OLLAMA_HOST   - default: http://localhost:11434
-  OLLAMA_MODEL  - default: mistral
+  OLLAMA_MODEL  - default: mistral:7b
   HF_API_TOKEN  - HuggingFace API token (free at huggingface.co)
   HF_MODEL      - default: mistralai/Mistral-7B-Instruct-v0.2
   OPENAI_API_KEY - OpenAI API key (fallback)
@@ -16,7 +16,7 @@ import urllib.request
 import urllib.error
 
 OLLAMA_HOST  = os.environ.get("OLLAMA_HOST",  "http://127.0.0.1:11434")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral:7b")
 HF_MODEL     = os.environ.get("HF_MODEL",     "mistralai/Mistral-7B-Instruct-v0.2")
 
 
