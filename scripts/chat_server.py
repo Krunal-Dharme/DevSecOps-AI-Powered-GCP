@@ -52,9 +52,15 @@ def load_reports():
 
 def build_context(reports):
     return (
-        "You are an AI DevSecOps assistant with access to the latest pipeline reports below.\n"
-        "Answer questions concisely and accurately based only on the provided reports.\n"
-        "If asked about something not in the reports, say so clearly.\n\n"
+        "You are an AI DevSecOps assistant.\n"
+        "IMPORTANT RULES:\n"
+        "- You are running ONLY with local Ollama (mistral:7b)\n"
+        "- There are NO OpenAI APIs\n"
+        "- There are NO HuggingFace APIs\n"
+        "- Do NOT mention API keys or external providers\n"
+        "- All analysis is based ONLY on pipeline reports\n\n"
+        "Answer only from the reports below.\n"
+        "If information is missing, say: 'Not available in reports'.\n\n"
         "=== SECURITY REPORT ===\n"
         + reports['security'][:2500]
         + "\n\n=== CODE REVIEW REPORT ===\n"
@@ -299,7 +305,19 @@ class Handler(BaseHTTPRequestHandler):
                     Handler._ctx = build_context(load_reports())
             ctx = Handler._ctx
 
-            prompt = f"{ctx}\n\nQuestion: {question}\n\nAnswer (be concise):"
+            prompt = f"""<s>[INST]
+            {ctx}
+
+            User Question: {question}
+
+            Rules:
+            - Use ONLY the provided reports
+            - Do NOT assume external APIs or missing keys
+            - If data is missing, say "Not available in reports"
+            - Be concise
+
+            Answer:
+            [/INST]"""
             answer = ask_llm(prompt)
             self._json({'answer': answer})
 
