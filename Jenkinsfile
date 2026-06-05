@@ -20,7 +20,7 @@ pipeline {
 
         /* ---------------- AI Configuration ---------------- */
         OLLAMA_HOST  = "http://127.0.0.1:11434"
-        OLLAMA_MODEL = "mistral"
+        OLLAMA_MODEL = "mistral:7b"
 
         AI_FAIL_ON_CRITICAL = "false"
     }
