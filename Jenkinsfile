@@ -18,7 +18,7 @@ pipeline {
         GKE_ZONE    = "asia-south1-a"
         NAMESPACE   = "default"
 
-        /* ---------------- AI Configuration ---------------- */
+        /* ---------------- AI (OLLAMA ONLY) ---------------- */
         OLLAMA_HOST  = "http://127.0.0.1:11434"
         OLLAMA_MODEL = "mistral:7b"
 
@@ -45,17 +45,12 @@ pipeline {
         stage('Verify Java') {
             steps {
                 sh '''
-                    echo "JAVA_HOME=$JAVA_HOME"
-                    which java
-                    which javac
-
                     java -version
                     javac -version
-
                     mvn -version
                 '''
-    }
-}
+            }
+        }
 
         stage('Compile') {
             steps {
@@ -70,16 +65,17 @@ pipeline {
         }
 
     /* =====================================================
-       AI LAYER 1 — Code Review
+       AI LAYER 1 — Code Review (OLLAMA ONLY)
     ===================================================== */
 
         stage('Ensure Ollama Model') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     sh '''
-                        if ollama list 2>/dev/null | grep -q "^${OLLAMA_MODEL}"; then
-                            echo "[AI] Model already exists"
+                        if ollama list | grep -q "${OLLAMA_MODEL}"; then
+                            echo "[AI] Model already available"
                         else
+                            echo "[AI] Pulling model..."
                             ollama pull ${OLLAMA_MODEL}
                         fi
                     '''
@@ -90,12 +86,7 @@ pipeline {
         stage('AI Code Review') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    withCredentials([
-                        string(credentialsId: 'hf-api-token', variable: 'HF_API_TOKEN'),
-                        string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')
-                    ]) {
-                        sh 'python3 scripts/ai_code_review.py'
-                    }
+                    sh 'python3 scripts/ai_code_review.py'
                 }
             }
             post {
@@ -132,9 +123,7 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        mvn sonar:sonar
-                    '''
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
@@ -191,18 +180,13 @@ pipeline {
         }
 
     /* =====================================================
-       AI LAYER 2 — Security Analysis
+       AI LAYER 2 — Security Analysis (OLLAMA ONLY)
     ===================================================== */
 
         stage('AI Security Analysis') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    withCredentials([
-                        string(credentialsId: 'hf-api-token', variable: 'HF_API_TOKEN'),
-                        string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')
-                    ]) {
-                        sh 'python3 scripts/ai_security_analysis.py'
-                    }
+                    sh 'python3 scripts/ai_security_analysis.py'
                 }
             }
             post {
@@ -240,16 +224,14 @@ pipeline {
         }
 
     /* =====================================================
-       GKE ACCESS (CLEAN GCP WAY)
+       GKE ACCESS
     ===================================================== */
 
         stage('Get GKE Credentials') {
             steps {
                 sh '''
                     export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-
                     gcloud config set project ${GCP_PROJECT}
-
                     gcloud container clusters get-credentials ${GKE_CLUSTER} \
                         --zone ${GKE_ZONE} \
                         --project ${GCP_PROJECT}
@@ -273,18 +255,13 @@ pipeline {
         }
 
     /* =====================================================
-       AI LAYER 3 — Release Notes
+       AI LAYER 3 — Release Notes (OLLAMA ONLY)
     ===================================================== */
 
         stage('AI Release Notes') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    withCredentials([
-                        string(credentialsId: 'hf-api-token', variable: 'HF_API_TOKEN'),
-                        string(credentialsId: 'openai-api-key', variable: 'OPENAI_API_KEY')
-                    ]) {
-                        sh 'python3 scripts/ai_release_notes.py'
-                    }
+                    sh 'python3 scripts/ai_release_notes.py'
                 }
             }
             post {
@@ -301,12 +278,7 @@ pipeline {
         stage('Deploy to GKE') {
             steps {
                 sh '''
-                    echo "Updating image..."
-
                     sed -i "s|replace|${IMAGE_NAME}|g" deployment.yaml
-
-                    echo "Deploying to GKE..."
-
                     kubectl apply -f deployment.yaml -n ${NAMESPACE}
                 '''
             }
@@ -316,7 +288,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline completed successfully"
+            echo "✅ Pipeline completed successfully (Ollama AI enabled)"
         }
         unstable {
             echo "⚠️ Pipeline completed with warnings"
