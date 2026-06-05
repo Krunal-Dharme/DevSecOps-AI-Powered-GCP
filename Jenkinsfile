@@ -42,6 +42,21 @@ pipeline {
        BUILD
     ===================================================== */
 
+        stage('Verify Java') {
+            steps {
+                sh '''
+                    echo "JAVA_HOME=$JAVA_HOME"
+                    which java
+                    which javac
+
+                    java -version
+                    javac -version
+
+                    mvn -version
+                '''
+    }
+}
+
         stage('Compile') {
             steps {
                 sh 'mvn compile'
