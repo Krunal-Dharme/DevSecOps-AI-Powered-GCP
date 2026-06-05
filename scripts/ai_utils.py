@@ -20,7 +20,7 @@ OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral:7b")
 HF_MODEL     = os.environ.get("HF_MODEL",     "mistralai/Mistral-7B-Instruct-v0.2")
 
 
-def _http_post(url, headers, body, timeout=120):
+def _http_post(url, headers, body, timeout=1500):
     data = json.dumps(body).encode("utf-8")
     req  = urllib.request.Request(url, data=data, headers=headers, method="POST")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -41,7 +41,7 @@ def _ensure_ollama_model():
             f"{OLLAMA_HOST}/api/pull", data=pull_data,
             headers={"Content-Type": "application/json"}, method="POST"
         )
-        with urllib.request.urlopen(pull_req, timeout=600) as resp:
+        with urllib.request.urlopen(pull_req, timeout=1500) as resp:
             resp.read()
         print(f"[AI] Model '{OLLAMA_MODEL}' pulled successfully.")
     else:
@@ -55,7 +55,7 @@ def _call_ollama(prompt):
         f"{OLLAMA_HOST}/api/generate",
         {"Content-Type": "application/json"},
         {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
-        timeout=120,
+        timeout=1500,
     )
     return result["response"]
 
