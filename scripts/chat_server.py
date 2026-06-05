@@ -25,7 +25,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ai_utils import ask_llm
 
 PORT        = int(os.environ.get('CHAT_PORT',   5001))
-REPORTS_DIR = os.environ.get('REPORTS_DIR', '.')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+REPORTS_DIR = os.environ.get('REPORTS_DIR', BASE_DIR)
 
 
 # ── Report loading ────────────────────────────────────────────────────────────
