@@ -68,6 +68,14 @@ def build_context(reports):
         "- No OpenAI APIs\n"
         "- No HuggingFace APIs\n"
         "- Answer ONLY from provided files\n"
+        "- Answer ONLY from provided files\n"
+        "- Never invent information\n"
+        "- If information is missing say: Not available in reports\n"
+        "- Prefer security findings first\n"
+        "- Mention CVE IDs when available\n"
+        "- Mention affected files when available\n"
+        "- Give remediation steps when possible\n"
+        "- Be concise and actionable\n"
         "- If data is missing say: Not available in reports\n\n"
 
         "=== SECURITY REPORT ===\n"
@@ -224,6 +232,8 @@ CHAT_HTML = r"""<!DOCTYPE html>
     <button onclick="ask(this.textContent)">List vulnerable dependencies</button>
     <button onclick="ask(this.textContent)">Show highest CVSS vulnerabilities</button>
     <button onclick="ask(this.textContent)">Which libraries should I upgrade first?</button>
+    <button onclick="ask(this.textContent)">Review Dockerfile security</button>
+    <button onclick="ask(this.textContent)">List all CVEs</button>
   </div>
   <div class="row">
     <input id="inp" placeholder="Ask about your pipeline reports…"
@@ -350,10 +360,14 @@ class Handler(BaseHTTPRequestHandler):
             User Question: {question}
 
             Rules:
-            - Use ONLY the provided reports
-            - Do NOT assume external APIs or missing keys
-            - If data is missing, say "Not available in reports"
-            - Be concise
+            - Answer ONLY from provided files
+            - Never invent information
+            - If information is missing say: Not available in reports
+            - Prefer security findings first
+            - Mention CVE IDs when available
+            - Mention affected files when available
+            - Give remediation steps when possible
+            - Be concise and actionable
 
             Answer:
             [/INST]"""
