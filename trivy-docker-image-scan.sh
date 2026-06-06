@@ -10,17 +10,13 @@ echo "Scanning image: $dockerImageName"
 
 # High severity scan
 trivy image \
-  --severity HIGH,CRITICAL \
-  --format table \
-  -o trivy-report.txt \
+  --format json \
+  -o trivy-report.json \
   $dockerImageName
 
-cat trivy-report.txt
+trivy image --exit-code 0 --severity HIGH $dockerImageName
 
-trivy image \
-  --exit-code 1 \
-  --severity CRITICAL \
-  $dockerImageName
+trivy image --exit-code 1 --severity CRITICAL $dockerImageName
 
 exit_code=$?
 echo "Exit Code : $exit_code"
