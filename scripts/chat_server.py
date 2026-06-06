@@ -45,7 +45,7 @@ def load_reports():
     'docker_rego':   'dockerfile-security.rego',
     'k8s_rego':      'opa-k8s-security.rego',
     'owasp':         'target/dependency-check-report.json',  
-    'trivy':         'trivy-report.txt' 
+    'trivy':         'trivy-report.json' 
 }
     reports = {}
     for key, name in files.items():
@@ -207,6 +207,7 @@ CHAT_HTML = r"""<!DOCTYPE html>
   <div class="chip" onclick="ask('What is the overall risk level and should we deploy?')">&#9888; Risk Assessment</div>
   <div class="chip" onclick="ask('List all critical and high vulnerabilities with CVE IDs.')">&#128272; CVEs</div>
   <div class="chip" onclick="ask('Summarise OWASP dependency vulnerabilities')">OWASP</div>
+  <div class="chip" onclick="ask('Summarise Trivy container vulnerabilities')">Trivy</div>
 </div>
 
 <div class="chat" id="chat">
@@ -234,6 +235,9 @@ CHAT_HTML = r"""<!DOCTYPE html>
     <button onclick="ask(this.textContent)">Which libraries should I upgrade first?</button>
     <button onclick="ask(this.textContent)">Review Dockerfile security</button>
     <button onclick="ask(this.textContent)">List all CVEs</button>
+    <button onclick="ask(this.textContent)">Show container vulnerabilities</button>
+    <button onclick="ask(this.textContent)">List critical container CVEs</button>
+    <button onclick="ask(this.textContent)">Which container packages should be updated?</button>
   </div>
   <div class="row">
     <input id="inp" placeholder="Ask about your pipeline reports…"
