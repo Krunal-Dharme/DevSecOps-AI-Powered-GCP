@@ -59,7 +59,6 @@ def load_reports():
 
 
 def build_context(reports):
-    def build_context(reports):
     return (
         "You are an AI DevSecOps assistant.\n"
         "IMPORTANT RULES:\n"
