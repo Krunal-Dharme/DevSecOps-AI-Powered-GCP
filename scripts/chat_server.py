@@ -33,10 +33,18 @@ REPORTS_DIR = os.environ.get('REPORTS_DIR', BASE_DIR)
 
 def load_reports():
     files = {
-        'security':     'ai-security-report.md',
-        'code_review':  'ai-code-review-report.md',
-        'release_notes':'ai-release-notes.md',
-    }
+    'security':      'ai-security-report.md',
+    'code_review':   'ai-code-review-report.md',
+    'release_notes': 'ai-release-notes.md',
+
+    'jenkinsfile':   'Jenkinsfile',
+    'dockerfile':    'Dockerfile',
+    'pom':           'pom.xml',
+    'deployment':    'deployment.yaml',
+
+    'docker_rego':   'dockerfile-security.rego',
+    'k8s_rego':      'opa-k8s-security.rego'
+}
     reports = {}
     for key, name in files.items():
         path = os.path.join(REPORTS_DIR, name)
@@ -51,22 +59,42 @@ def load_reports():
 
 
 def build_context(reports):
+    def build_context(reports):
     return (
         "You are an AI DevSecOps assistant.\n"
         "IMPORTANT RULES:\n"
-        "- You are running ONLY with local Ollama (mistral:7b)\n"
-        "- There are NO OpenAI APIs\n"
-        "- There are NO HuggingFace APIs\n"
-        "- Do NOT mention API keys or external providers\n"
-        "- All analysis is based ONLY on pipeline reports\n\n"
-        "Answer only from the reports below.\n"
-        "If information is missing, say: 'Not available in reports'.\n\n"
+        "- Running locally with Ollama mistral:7b\n"
+        "- No OpenAI APIs\n"
+        "- No HuggingFace APIs\n"
+        "- Answer ONLY from provided files\n"
+        "- If data is missing say: Not available in reports\n\n"
+
         "=== SECURITY REPORT ===\n"
-        + reports['security'][:2500]
+        + reports['security'][:3000]
+
         + "\n\n=== CODE REVIEW REPORT ===\n"
-        + reports['code_review'][:1800]
+        + reports['code_review'][:2500]
+
         + "\n\n=== RELEASE NOTES ===\n"
-        + reports['release_notes'][:1200]
+        + reports['release_notes'][:2000]
+
+        + "\n\n=== JENKINS PIPELINE ===\n"
+        + reports['jenkinsfile'][:5000]
+
+        + "\n\n=== DOCKERFILE ===\n"
+        + reports['dockerfile'][:2000]
+
+        + "\n\n=== MAVEN POM.XML ===\n"
+        + reports['pom'][:3000]
+
+        + "\n\n=== KUBERNETES DEPLOYMENT ===\n"
+        + reports['deployment'][:3000]
+
+        + "\n\n=== DOCKER SECURITY POLICIES ===\n"
+        + reports['docker_rego'][:2000]
+
+        + "\n\n=== K8S SECURITY POLICIES ===\n"
+        + reports['k8s_rego'][:2000]
     )
 
 
