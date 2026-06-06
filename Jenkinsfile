@@ -290,14 +290,16 @@ pipeline {
 
     always {
 
-        echo "====================================================="
-        echo "🤖 AI PIPELINE ASSISTANT"
-        echo "Open: http://34.93.121.54:5001/"
-        echo "====================================================="
+    echo "====================================================="
+    echo "🤖 AI PIPELINE ASSISTANT"
+    echo "Open: http://34.93.121.54:5001/"
+    echo "====================================================="
 
+    script {
         currentBuild.description =
             '<a href="http://34.93.121.54:5001/" target="_blank">🤖 Open AI Pipeline Assistant</a>'
     }
+}
 
     success {
         echo "✅ Pipeline completed successfully (Ollama AI enabled)"
