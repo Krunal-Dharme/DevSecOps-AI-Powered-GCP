@@ -43,7 +43,9 @@ def load_reports():
     'deployment':    'deployment.yaml',
 
     'docker_rego':   'dockerfile-security.rego',
-    'k8s_rego':      'opa-k8s-security.rego'
+    'k8s_rego':      'opa-k8s-security.rego',
+    'owasp':         'target/dependency-check-report.json',  
+    'trivy':         'trivy-report.txt' 
 }
     reports = {}
     for key, name in files.items():
@@ -94,6 +96,12 @@ def build_context(reports):
 
         + "\n\n=== K8S SECURITY POLICIES ===\n"
         + reports['k8s_rego'][:2000]
+
+        + "\n\n=== TRIVY REPORT ===\n"
+        + reports['trivy'][:4000]
+
+        + "\n\n=== OWASP DEPENDENCY CHECK ===\n"
+        + reports['owasp'][:5000]
     )
 
 
@@ -190,6 +198,7 @@ CHAT_HTML = r"""<!DOCTYPE html>
   <div class="chip" onclick="ask('What changed in this release?')">&#128640; Release Notes</div>
   <div class="chip" onclick="ask('What is the overall risk level and should we deploy?')">&#9888; Risk Assessment</div>
   <div class="chip" onclick="ask('List all critical and high vulnerabilities with CVE IDs.')">&#128272; CVEs</div>
+  <div class="chip" onclick="ask('Summarise OWASP dependency vulnerabilities')">OWASP</div>
 </div>
 
 <div class="chat" id="chat">
@@ -212,6 +221,9 @@ CHAT_HTML = r"""<!DOCTYPE html>
     <button onclick="ask(this.textContent)">What should I fix first?</button>
     <button onclick="ask(this.textContent)">Give me the remediation roadmap.</button>
     <button onclick="ask(this.textContent)">What new features were added?</button>
+    <button onclick="ask(this.textContent)">List vulnerable dependencies</button>
+    <button onclick="ask(this.textContent)">Show highest CVSS vulnerabilities</button>
+    <button onclick="ask(this.textContent)">Which libraries should I upgrade first?</button>
   </div>
   <div class="row">
     <input id="inp" placeholder="Ask about your pipeline reports…"
