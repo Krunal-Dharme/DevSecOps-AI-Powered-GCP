@@ -106,7 +106,7 @@ def build_context(reports):
         + reports['k8s_rego'][:2000]
 
         + "\n\n=== TRIVY REPORT ===\n"
-        + reports['trivy'][:5000]
+        + reports['trivy'][:3000]
 
         + "\n\n=== OWASP DEPENDENCY CHECK ===\n"
         + reports['owasp'][:5000]
