@@ -2,7 +2,7 @@
 """
 AI Pipeline Chat Server
 Serves a web chat interface where developers can ask questions about pipeline reports.
-Uses the LLM provider chain from ai_utils.py (Ollama → HuggingFace → OpenAI).
+Uses Ollama (mistral:7b) via ai_utils.py.
 
 Usage:
   python3 scripts/chat_server.py              # port 5001 (default)
@@ -37,7 +37,7 @@ def load_reports():
     'code_review':   'ai-code-review-report.md',
     'release_notes': 'ai-release-notes.md',
     'trivy':         'trivy-summary.md',
-    'owasp':         'target/dependency-check-report.json'  
+    'owasp':         'target/dependency-check-report.json',  
     'jenkinsfile':   'Jenkinsfile',
     'dockerfile':    'Dockerfile',
     'pom':           'pom.xml',
@@ -49,7 +49,7 @@ def load_reports():
     for key, name in files.items():
         path = os.path.join(REPORTS_DIR, name)
         if os.path.exists(path):
-            with open(path) as f:
+            with open(path, "r", encoding="utf-8", errors="ignore") as f:
                 reports[key] = f.read()
             print(f"[Chat] Loaded {name}")
         else:
@@ -59,56 +59,29 @@ def load_reports():
 
 
 def build_context(reports):
-    return (
-        "You are an AI DevSecOps assistant.\n"
-        "IMPORTANT RULES:\n"
-        "- Running locally with Ollama mistral:7b\n"
-        "- No OpenAI APIs\n"
-        "- No HuggingFace APIs\n"
-        "- Answer ONLY from provided files\n"
-        "- Answer ONLY from provided files\n"
-        "- Never invent information\n"
-        "- If information is missing say: Not available in reports\n"
-        "- Prefer security findings first\n"
-        "- Mention CVE IDs when available\n"
-        "- Mention affected files when available\n"
-        "- Give remediation steps when possible\n"
-        "- Be concise and actionable\n"
-        "- If data is missing say: Not available in reports\n\n"
 
-        "=== SECURITY REPORT ===\n"
-        + reports['security'][:3000]
+    context = """
+You are an AI DevSecOps assistant.
 
-        + "\n\n=== CODE REVIEW REPORT ===\n"
-        + reports['code_review'][:2500]
+IMPORTANT RULES:
+- Running locally with Ollama mistral:7b
+- Answer ONLY from provided files
+- Never invent information
+- If information is missing say: Not available in reports
+- Mention CVE IDs when available
+- Give remediation steps when possible
+"""
 
-        + "\n\n=== RELEASE NOTES ===\n"
-        + reports['release_notes'][:2000]
+    for name, content in reports.items():
 
-        + "\n\n=== JENKINS PIPELINE ===\n"
-        + reports['jenkinsfile'][:5000]
+        context += f"\n\n===== {name} =====\n"
 
-        + "\n\n=== DOCKERFILE ===\n"
-        + reports['dockerfile'][:2000]
+        if name == "owasp":
+            context += content[:4000]
+        else:
+            context += content[:2000]
 
-        + "\n\n=== MAVEN POM.XML ===\n"
-        + reports['pom'][:3000]
-
-        + "\n\n=== KUBERNETES DEPLOYMENT ===\n"
-        + reports['deployment'][:3000]
-
-        + "\n\n=== DOCKER SECURITY POLICIES ===\n"
-        + reports['docker_rego'][:2000]
-
-        + "\n\n=== K8S SECURITY POLICIES ===\n"
-        + reports['k8s_rego'][:2000]
-
-        + "\n\n=== TRIVY REPORT ===\n"
-        + reports['trivy'][:3000]
-
-        + "\n\n=== OWASP DEPENDENCY CHECK ===\n"
-        + reports['owasp'][:5000]
-    )
+    return context
 
 
 # ── Embedded chat UI ──────────────────────────────────────────────────────────
@@ -365,7 +338,9 @@ class Handler(BaseHTTPRequestHandler):
             - Answer ONLY from provided files
             - Never invent information
             - If information is missing say: Not available in reports
-            - Prefer security findings first
+            - If asked about deployment readiness, provide PASS/FAIL verdict.
+            - Prioritize Critical > High > Medium > Low findings.
+            - Reference the report section used.t
             - Mention CVE IDs when available
             - Mention affected files when available
             - Give remediation steps when possible
@@ -392,7 +367,9 @@ def main():
     print(f"[Chat] Reload reports    : GET  http://localhost:{PORT}/reload")
     print(f"[Chat] Press Ctrl+C to stop\n")
 
-    server = HTTPServer(('0.0.0.0', PORT), Handler)
+    from http.server import ThreadingHTTPServer
+
+    server = ThreadingHTTPServer(('0.0.0.0', PORT), Handler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
