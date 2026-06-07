@@ -23,6 +23,7 @@ pipeline {
         OLLAMA_MODEL = "mistral:7b"
 
         AI_FAIL_ON_CRITICAL = "false"
+        REPORTS_ROOT = "reports"
     }
 
     stages {
