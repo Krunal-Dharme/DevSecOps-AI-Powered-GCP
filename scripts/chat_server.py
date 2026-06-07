@@ -36,16 +36,14 @@ def load_reports():
     'security':      'ai-security-report.md',
     'code_review':   'ai-code-review-report.md',
     'release_notes': 'ai-release-notes.md',
-
+    'trivy':         'trivy-summary.md',
+    'owasp':         'target/dependency-check-report.json'  
     'jenkinsfile':   'Jenkinsfile',
     'dockerfile':    'Dockerfile',
     'pom':           'pom.xml',
     'deployment':    'deployment.yaml',
-
     'docker_rego':   'dockerfile-security.rego',
-    'k8s_rego':      'opa-k8s-security.rego',
-    'owasp':         'target/dependency-check-report.json',  
-    'trivy':         'trivy-summary.md', 
+    'k8s_rego':      'opa-k8s-security.rego'
 }
     reports = {}
     for key, name in files.items():
