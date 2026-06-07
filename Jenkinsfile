@@ -277,6 +277,32 @@ pipeline {
             }
         }
 
+        stage('Store Reports') {
+            steps {
+                sh '''
+                mkdir -p reports/${JOB_NAME}/build-${BUILD_NUMBER}
+
+                cp ai-security-report.md \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true
+
+                cp ai-code-review-report.md \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true
+
+                cp ai-release-notes.md \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true
+
+                cp trivy-summary.md \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true
+
+                cp target/dependency-check-report.json \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true
+
+                cp trivy-report.json \
+                   reports/${JOB_NAME}/build-${BUILD_NUMBER}/ || true   
+                '''
+    }
+        }
+
     /* =====================================================
        DEPLOYMENT TO GKE
     ===================================================== */
