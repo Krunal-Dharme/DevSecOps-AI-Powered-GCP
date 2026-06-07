@@ -45,7 +45,7 @@ def load_reports():
     'docker_rego':   'dockerfile-security.rego',
     'k8s_rego':      'opa-k8s-security.rego',
     'owasp':         'target/dependency-check-report.json',  
-    'trivy':         'trivy-report.json' 
+    'trivy':         'trivy-summary.md', 
 }
     reports = {}
     for key, name in files.items():
@@ -106,7 +106,7 @@ def build_context(reports):
         + reports['k8s_rego'][:2000]
 
         + "\n\n=== TRIVY REPORT ===\n"
-        + reports['trivy'][:4000]
+        + reports['trivy'][:5000]
 
         + "\n\n=== OWASP DEPENDENCY CHECK ===\n"
         + reports['owasp'][:5000]
