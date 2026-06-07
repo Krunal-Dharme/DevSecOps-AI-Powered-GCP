@@ -14,6 +14,19 @@ trivy image \
   -o trivy-report.json \
   $dockerImageName
 
+echo "# Trivy Summary Report" > trivy-summary.md
+echo "" >> trivy-summary.md
+
+jq -r '
+.Results[]? |
+"Target: \(.Target)\n" +
+(
+  (.Vulnerabilities // []) |
+  map("- " + .VulnerabilityID + " | " + .Severity + " | " + .PkgName) |
+  join("\n")
+)
+' trivy-report.json >> trivy-summary.md
+
 trivy image --exit-code 0 --severity HIGH $dockerImageName
 
 trivy image --exit-code 1 --severity CRITICAL $dockerImageName
