@@ -160,7 +160,7 @@ pipeline {
                     }
                     post {
                         always {
-                            archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                            archiveArtifacts artifacts: 'trivy-report.json,trivy-summary.md', allowEmptyArchive: true
                         }
                     }
          }
