@@ -1,5 +1,5 @@
 variable "project_id" {
-  default = "project-052ab01a-3589-4f07-a45"
+  default = "my-ai-project-499013"
 }
 
 variable "region" {
