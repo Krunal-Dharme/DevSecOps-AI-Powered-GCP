@@ -93,7 +93,7 @@ pipeline {
             steps {
 
                 sh '''
-                    gcloud container clusters get-credentials quantam-gke \
+                    gcloud container clusters get-credentials quantam-gke-new-ai \
                     --zone asia-south1-a \
                     --project my-ai-project-499013
                 '''
