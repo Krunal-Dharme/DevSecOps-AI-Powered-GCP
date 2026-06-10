@@ -1,6 +1,6 @@
 resource "google_container_cluster" "gke" {
 
-  name     = "quantam-gke"
+  name     = "quantam-gke-new-ai"
   location = var.zone
 
   deletion_protection = false
